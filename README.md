@@ -9,10 +9,13 @@ Since my daughter has been going to Kindergarden for more than 2 years there are
 As a lazy person instead of downloading these photos using their website I decided to create a simple tool.
 
 Usage of ./flexkids-photo-downloader:
+
   -password string
         password
+
   -url string
         url of the flexkids web site (default "https://kindergarden.flexkids.nl")
+
   -username string
         username
 
