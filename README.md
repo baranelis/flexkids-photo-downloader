@@ -8,7 +8,19 @@ Since my daughter has been going to Kindergarden for more than 2 years there are
 
 As a lazy person instead of downloading these photos using their website I decided to create a simple tool.
 
-Usage of ./flexkids-photo-downloader:
+## Usage
+
+### Linux & Mac
+
+ ./flexkids-photo-downloader -username <username> -password <password> -url <url of the flexkids website> -o <output directory>
+
+### Windows
+
+ flexkids-photo-downloader.exe -username <username> -password <password> -url <url of the flexkids website> -o <output directory>
+
+
+  -o string
+        output directory (default "output")
 
   -password string
         password
@@ -18,7 +30,6 @@ Usage of ./flexkids-photo-downloader:
 
   -username string
         username
-
 
 You can download the windows executables from the bin directory. (I did not test if it works on windows)
 

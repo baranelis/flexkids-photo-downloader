@@ -16,9 +16,10 @@ import (
 )
 
 var (
-	username = flag.String("username", "", "username")
-	password = flag.String("password", "", "password")
-	baseUrl  = flag.String("url", "https://kindergarden.flexkids.nl", "url of the flexkids web site")
+	username  = flag.String("username", "", "username")
+	password  = flag.String("password", "", "password")
+	baseUrl   = flag.String("url", "https://kindergarden.flexkids.nl", "url of the flexkids web site")
+	outputDir = flag.String("o", "output", "output directory")
 )
 
 const (
@@ -54,7 +55,7 @@ func main() {
 
 	done := downloadPhotos(loginCookie, getAlbums(loginCookie, getMonths(loginCookie)))
 	<-done
-	log.Println("Downloaded all photos done")
+	log.Println("Downloaded all photos")
 
 }
 
@@ -83,12 +84,10 @@ func downloadPhotos(loginCookie *http.Cookie, in chan *photo) chan interface{} {
 
 				content, err := ioutil.ReadAll(res.Body)
 				res.Body.Close()
-
 				log.Printf("Downloading photo %d-%02d %d.jpg\n", p.year, p.month, p.photoId)
-
 				err = ioutil.WriteFile(
 					filepath.Join(
-						"output",
+						*outputDir,
 						fmt.Sprintf("%d-%02d", p.year, p.month),
 						fmt.Sprintf("%d.jpg", p.photoId)),
 					content, 0644)
@@ -97,7 +96,6 @@ func downloadPhotos(loginCookie *http.Cookie, in chan *photo) chan interface{} {
 					log.Println(err.Error())
 					log.Printf("error while downloading  %+v", p)
 				}
-
 			}
 			log.Printf("Photo downloader %d is done\n", n)
 		}(i + 1)
@@ -127,7 +125,7 @@ func getAlbums(loginCookie *http.Cookie, in chan *monthYear) chan *photo {
 
 				req, err := http.NewRequest("POST", *baseUrl+standardAlbumUrl, strings.NewReader(body.Encode()))
 				if err != nil {
-					log.Println("Error creating request for photos")
+					log.Println("Error creating request for albums")
 					return
 				}
 
@@ -136,7 +134,7 @@ func getAlbums(loginCookie *http.Cookie, in chan *monthYear) chan *photo {
 				res, err := http.DefaultClient.Do(req)
 
 				if err != nil {
-					log.Printf("Error calling photos of the album for %d-%d\n", pair.year, pair.month)
+					log.Printf("Error retrieving the album for %d-%d\n", pair.year, pair.month)
 					continue
 				}
 				content, err := ioutil.ReadAll(res.Body)
@@ -153,7 +151,7 @@ func getAlbums(loginCookie *http.Cookie, in chan *monthYear) chan *photo {
 				}
 			}
 
-			log.Printf("Photo id retriever %d is done\n", n)
+			log.Printf("Album retriever %d is done\n", n)
 		}(i + 1)
 	}
 
@@ -169,13 +167,13 @@ func getMonths(loginCookie *http.Cookie) chan *monthYear {
 	go func() {
 		req, err := http.NewRequest("GET", *baseUrl+photoAlbumUrl, nil)
 		if err != nil {
-			log.Println("Error creating request for albums")
+			log.Println("Error creating request for months")
 			return
 		}
 		req.AddCookie(loginCookie)
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
-			log.Println("Error calling photo album")
+			log.Println("Error calling months")
 			return
 		}
 
@@ -188,8 +186,9 @@ func getMonths(loginCookie *http.Cookie) chan *monthYear {
 			month, _ := strconv.Atoi(string(match[1]))
 			year, _ := strconv.Atoi(string(match[2]))
 
-			if err := os.MkdirAll(filepath.Join("output", fmt.Sprintf("%d-%02d", year, month)), os.ModePerm); err != nil {
-				log.Println("Could not create directory")
+			filePath := filepath.Join(*outputDir, fmt.Sprintf("%d-%02d", year, month))
+			if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
+				log.Printf("Could not create directory: %s\n", filePath)
 			}
 			channel <- &monthYear{month: month, year: year}
 		}
