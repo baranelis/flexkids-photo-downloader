@@ -1,0 +1,5 @@
+*.iml
+.idea
+output
+flexkids-photo-downloader
+.DS_Store
