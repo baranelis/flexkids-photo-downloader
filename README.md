@@ -19,3 +19,7 @@ Usage of ./flexkids-photo-downloader:
   -username string
         username
 
+
+You can download the windows executables from the bin directory. (I did not test if it works on windows)
+
+Send me an email if you need some help. barane@gmail.com
