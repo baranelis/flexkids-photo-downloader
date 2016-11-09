@@ -40,9 +40,7 @@ type photo struct {
 }
 
 func main() {
-
 	flag.Parse()
-
 	if *username == "" || *password == "" {
 		flag.Usage()
 		return
@@ -61,7 +59,7 @@ func main() {
 
 func startDownloadPhotos(loginCookie *http.Cookie, in chan *photo) chan interface{} {
 	result := make(chan interface{})
-	numWorkers := 3
+	numWorkers := 2
 	var wg sync.WaitGroup
 	wg.Add(numWorkers)
 
@@ -110,7 +108,7 @@ func startGetMonths(loginCookie *http.Cookie) chan *monthYear {
 	return channel
 }
 
-func downloadPhotos(loginCookie *http.Cookie, in chan *photo){
+func downloadPhotos(loginCookie *http.Cookie, in chan *photo) {
 	for p := range in {
 		req, err := http.NewRequest("GET", *baseUrl+mediaUrl+strconv.Itoa(p.photoId), nil)
 		if err != nil {
