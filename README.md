@@ -12,11 +12,11 @@ As a lazy person instead of downloading these photos using their website I decid
 
 ### Linux & Mac
 
- ./flexkids-photo-downloader -username (username) -password (password) -url (url of the flexkids website) -o (output directory)
+ ./flexkids-photo-downloader -username username -password password -url url-of-the-flexkids-website -o output-directory
 
 ### Windows
 
- flexkids-photo-downloader -username (username) -password (password) -url (url of the flexkids website) -o (output directory)
+ flexkids-photo-downloader-amd64.exe -username username -password password -url url-of-the-flexkids-website -o output-directory
 
 
   -o string
