@@ -20,6 +20,7 @@ var (
 	password  = flag.String("password", "", "password")
 	baseUrl   = flag.String("url", "https://kindergarden.flexkids.nl", "url of the flexkids web site")
 	outputDir = flag.String("o", "output", "output directory")
+	month     = flag.String("m", "", "desired month e.g. 2014-09. not required")
 )
 
 const (
@@ -51,7 +52,15 @@ func main() {
 		log.Fatal("Could not login")
 	}
 
-	done := startDownloadPhotos(loginCookie, startGetAlbums(loginCookie, startGetMonths(loginCookie)))
+	var done chan interface{}
+	if *month == "" {
+		done = startDownloadPhotos(loginCookie, startGetAlbums(loginCookie, startGetMonths(loginCookie)))
+	} else {
+		my := strings.Split(*month, "-")
+		month, _ := strconv.Atoi(my[1])
+		year, _ := strconv.Atoi(my[0])
+		done = startDownloadPhotos(loginCookie, startGetAlbums(loginCookie, startOneMonth(month, year)))
+	}
 	<-done
 	log.Println("Downloaded all photos")
 
@@ -59,7 +68,7 @@ func main() {
 
 func startDownloadPhotos(loginCookie *http.Cookie, in chan *photo) chan interface{} {
 	result := make(chan interface{})
-	numWorkers := 2
+	numWorkers := 1
 	var wg sync.WaitGroup
 	wg.Add(numWorkers)
 
@@ -94,6 +103,19 @@ func startGetAlbums(loginCookie *http.Cookie, in chan *monthYear) chan *photo {
 
 	go func() {
 		wg.Wait()
+		close(channel)
+	}()
+	return channel
+}
+
+func startOneMonth(month, year int) chan *monthYear {
+	filePath := filepath.Join(*outputDir, fmt.Sprintf("%d-%02d", year, month))
+	if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
+		log.Printf("Could not create directory: %s\n", filePath)
+	}
+	channel := make(chan *monthYear)
+	go func() {
+		channel <- &monthYear{month: month, year: year}
 		close(channel)
 	}()
 	return channel
